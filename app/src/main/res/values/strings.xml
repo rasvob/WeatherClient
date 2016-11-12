@@ -8,4 +8,10 @@
 
     <string name="action_settings">Settings</string>
     <string name="show_forecast_by_gps">Show forecast by GPS</string>
+    <string name="refresh">Refresh</string>
+    <string name="title_activity_manage_locations">ManageLocationsActivity</string>
+    <string name="search_locations">Search locations...</string>
+    <string name="add_current_location">Add current location</string>
+    <string name="set_favourite_location">Set favourite location</string>
+    <string name="remove_location">Remove location</string>
 </resources>
