@@ -14,4 +14,11 @@
     <string name="add_current_location">Add current location</string>
     <string name="set_favourite_location">Set favourite location</string>
     <string name="remove_location">Remove location</string>
+
+    <string name="dialog_wifi_title">No network connected</string>
+    <string name="dialog_wifi_text">In order to add new location internet access is mandatory</string>
+    <string name="dialog_gps_title">Location service unavailable</string>
+    <string name="dialog_gps_text">Enable location provider in settings, please</string>
+    <string name="open_settings">Open setting</string>
+    <string name="cancel">Cancel</string>
 </resources>

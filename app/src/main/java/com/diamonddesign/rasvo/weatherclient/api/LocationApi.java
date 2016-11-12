@@ -25,7 +25,21 @@ public class LocationApi {
                 .addQueryParameter("q", query)
                 .build();
 
-        Log.d(TAG, "buildAutocompleteRequest: " + url);
+        return new Request.Builder().url(url).build();
+    }
+
+    public Request buildGpsLocationRequest(double latitude, double longitude) {
+        HttpUrl url = new HttpUrl.Builder()
+                .scheme("http")
+                .host(ApiContants.BASE_URL)
+                .addPathSegment("locations")
+                .addPathSegment("v1")
+                .addPathSegment("cities")
+                .addPathSegment("geoposition")
+                .addPathSegment("search")
+                .addQueryParameter("apikey", ApiContants.API_KEY)
+                .addQueryParameter("q", String.valueOf(latitude) + "," + String.valueOf(longitude))
+                .build();
 
         return new Request.Builder().url(url).build();
     }

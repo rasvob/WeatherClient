@@ -2,9 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_locations_gps"
+    <!--<item android:id="@+id/action_locations_gps"-->
+        <!--android:title="@string/add_current_location"-->
+        <!--android:icon="@drawable/ic_gps_fixed_white_24px"-->
+        <!--app:showAsAction="always">-->
+    <!--</item>-->
+
+    <item android:id="@+id/action_locations_gplay"
         android:title="@string/add_current_location"
         android:icon="@drawable/ic_gps_fixed_white_24px"
-        app:showAsAction="always">
+        app:showAsAction="ifRoom">
     </item>
 </menu>

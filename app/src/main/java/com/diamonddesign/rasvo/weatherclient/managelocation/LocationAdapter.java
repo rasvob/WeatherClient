@@ -1,6 +1,8 @@
 package com.diamonddesign.rasvo.weatherclient.managelocation;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,15 +11,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.diamonddesign.rasvo.weatherclient.R;
 import com.diamonddesign.rasvo.weatherclient.enums.EntryOperation;
 import com.diamonddesign.rasvo.weatherclient.managelocation.callback.LocationOperationEvent;
-import com.diamonddesign.rasvo.weatherclient.managelocation.callback.OnOperationPerformed;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
-import com.google.common.eventbus.EventBus;
 
 import java.util.ArrayList;
 
@@ -29,8 +28,9 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
     private ArrayList<Location> locations;
     private Context context;
 
-    public LocationAdapter(ArrayList<Location> locations) {
+    public LocationAdapter(ArrayList<Location> locations, Context context) {
         this.locations = locations;
+        this.context = context;
     }
 
     @Override
@@ -41,24 +41,40 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
     }
 
     @Override
-    public void onBindViewHolder(LocationViewHolder holder, int position) {
-        Location location = locations.get(position);
-        int pos = position;
+    public void onBindViewHolder(final LocationViewHolder holder, int position) {
+        final Location location = locations.get(position);
+        final int pos = position;
         holder.locationName.setText(location.getLocationName());
+
+        if (location.isFavourite()) {
+            Drawable icon = ContextCompat.getDrawable(context, R.drawable.ic_favorite_white_24px);
+            holder.favIcon.setImageDrawable(icon);
+        }
+        else {
+            Drawable icon = ContextCompat.getDrawable(context, R.drawable.ic_favorite_border_white_24px);
+            holder.favIcon.setImageDrawable(icon);
+        }
+
+        holder.favIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                org.greenrobot.eventbus.EventBus.getDefault().post(new LocationOperationEvent(location, pos, EntryOperation.FAVOURITE));
+            }
+        });
 
         holder.overflow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //showPopUpMenu(holder.overflow, pos);
+                showPopUpMenu(holder.overflow, pos, location);
             }
         });
     }
 
-    private void showPopUpMenu(View view, int position) {
+    private void showPopUpMenu(View view, int position, Location location) {
         PopupMenu popupMenu = new PopupMenu(context, view);
         final MenuInflater inflater = popupMenu.getMenuInflater();
         inflater.inflate(R.menu.location_overflow_menu, popupMenu.getMenu());
-        popupMenu.setOnMenuItemClickListener(new PopUpMenuItemClickListenere(position));
+        popupMenu.setOnMenuItemClickListener(new PopUpMenuItemClickListenere(position, location));
         popupMenu.show();
     }
 
@@ -66,15 +82,8 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
         private Location location;
         private int position;
 
-        public PopUpMenuItemClickListenere() {
 
-        }
-
-        public PopUpMenuItemClickListenere(int position) {
-            this.position = position;
-        }
-
-        public PopUpMenuItemClickListenere(Location location, int position) {
+        public PopUpMenuItemClickListenere(int position, Location location) {
             this.location = location;
             this.position = position;
         }
@@ -100,14 +109,12 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
     }
 
     public class LocationViewHolder extends RecyclerView.ViewHolder {
-        public RelativeLayout outline;
         public ImageView favIcon;
         public TextView locationName;
         public ImageView overflow;
 
         public LocationViewHolder(View itemView) {
             super(itemView);
-            outline = (RelativeLayout) itemView.findViewById(R.id.locationFavBackgroud);
             favIcon = (ImageView) itemView.findViewById(R.id.locationFavImage);
             locationName = (TextView) itemView.findViewById(R.id.locationName);
             overflow = (ImageView) itemView.findViewById(R.id.locationOverflow);
