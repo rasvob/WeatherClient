@@ -31,12 +31,12 @@ public class GpsLocationTask extends AsyncTask<Request, Void, Location> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        dialog = new ProgressDialog(context);
-        dialog.isIndeterminate();
-        dialog.setCancelable(false);
-        dialog.setTitle("Please wait");
-        dialog.setMessage("Getting current location info...");
-        dialog.show();
+//        dialog = new ProgressDialog(context);
+//        dialog.isIndeterminate();
+//        dialog.setCancelable(false);
+//        dialog.setTitle("Please wait");
+//        dialog.setMessage("Getting current location info...");
+//        dialog.show();
     }
 
     @Override
@@ -57,9 +57,9 @@ public class GpsLocationTask extends AsyncTask<Request, Void, Location> {
 
             return location;
 
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
             Toast.makeText(context, "Network error, please try again", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
 
         return null;
@@ -69,8 +69,8 @@ public class GpsLocationTask extends AsyncTask<Request, Void, Location> {
     protected void onPostExecute(Location location) {
         super.onPostExecute(location);
 
-        if (dialog != null) {
-            dialog.dismiss();
-        }
+//        if (dialog != null) {
+//            dialog.dismiss();
+//        }
     }
 }

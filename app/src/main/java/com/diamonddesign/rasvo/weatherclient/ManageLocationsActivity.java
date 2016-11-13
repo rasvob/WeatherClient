@@ -86,11 +86,7 @@ public class ManageLocationsActivity extends AppCompatActivity implements Google
             });
         }
 
-        try {
-            buildApiClient();
-        } catch (Exception exc) {
-            exc.printStackTrace();
-        }
+        buildApiClient();
 
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.manage_location_coordinator);
         locationRecyclerView = (RecyclerView) findViewById(R.id.manage_location_recycler);
@@ -218,10 +214,7 @@ public class ManageLocationsActivity extends AppCompatActivity implements Google
     protected void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
-
-        if (googleApiClient != null) {
-            googleApiClient.connect();
-        }
+        googleApiClient.connect();
     }
 
     @Override
@@ -304,30 +297,36 @@ public class ManageLocationsActivity extends AppCompatActivity implements Google
         snackbar.show();
     }
 
-    private void getCurrentLocationFromApi() {
+    private synchronized void getCurrentLocationFromApi() {
         double lat = currentLocation.getLatitude();
         double lon = currentLocation.getLongitude();
 
-        LocationApi api = new LocationApi();
-        Request request = api.buildGpsLocationRequest(lat, lon);
+        try {
+            Toast.makeText(this, R.string.getting_current_location, Toast.LENGTH_SHORT).show();
+            LocationApi api = new LocationApi();
+            Request request = api.buildGpsLocationRequest(lat, lon);
 
-        GpsLocationTask task = new GpsLocationTask(this) {
-            @Override
-            protected void onPostExecute(Location location) {
-                super.onPostExecute(location);
-                if (location != null) {
-                    if (Location.find(Location.class, "key = ?", location.getKey()).size() == 0) {
-                        location.save();
-                        ManageLocationsActivity.this.locations.add(location);
-                        locationAdapter.notifyItemInserted(ManageLocationsActivity.this.locations.size() - 1);
-                        Toast.makeText(ManageLocationsActivity.this, location.getLocationName() + getString(R.string.added), Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ManageLocationsActivity.this, location.getLocationName() + getString(R.string.already_exists), Toast.LENGTH_SHORT).show();
+            GpsLocationTask task = new GpsLocationTask(this) {
+                @Override
+                protected void onPostExecute(Location location) {
+                    super.onPostExecute(location);
+                    if (location != null) {
+                        if (Location.find(Location.class, "key = ?", location.getKey()).size() == 0) {
+                            location.save();
+                            ManageLocationsActivity.this.locations.add(location);
+                            locationAdapter.notifyItemInserted(ManageLocationsActivity.this.locations.size() - 1);
+                            Toast.makeText(ManageLocationsActivity.this, location.getLocationName() + getString(R.string.added), Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ManageLocationsActivity.this, location.getLocationName() + getString(R.string.already_exists), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
-            }
-        };
-        task.execute(request);
+            };
+            task.execute(request);
+        }
+        catch (Exception ex) {
+            Toast.makeText(this, R.string.error_occured, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showLocationDialog() {
@@ -382,8 +381,9 @@ public class ManageLocationsActivity extends AppCompatActivity implements Google
             case REQUEST_PERMISSION_FINE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, R.string.location_permission_granted, Toast.LENGTH_SHORT).show();
+                    Log.d("TAG", "onRequestPermissionsResult: " + googleApiClient.isConnected());
                     if (googleApiClient != null) {
-                        googleApiClient.connect();
+                        googleApiClient.reconnect();
                     }
                 }
                 break;
@@ -400,11 +400,14 @@ public class ManageLocationsActivity extends AppCompatActivity implements Google
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             refreshCurrentPosition();
         }
+        Log.d("TAG", "onConnected: client connected");
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        googleApiClient.connect();
+        if (googleApiClient != null) {
+            googleApiClient.connect();
+        }
     }
 
     @Override

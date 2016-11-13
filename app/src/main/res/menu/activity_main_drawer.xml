@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single" android:id="@+id/nav_group_locations" android:orderInCategory="100">
 
-    <group android:checkableBehavior="single" android:id="@+id/locations">
-        <item
-            android:id="@+id/nav_location"
-            android:icon="@drawable/ic_weather_cloud"
-            android:title="Ostrava, Cze" />
     </group>
 
-    <item android:title="Settings">
+    <item android:title="@string/settings" android:id="@+id/nav_settings_wrapper" android:orderInCategory="200">
         <menu>
             <item
                 android:id="@+id/nav_manage_location"
                 android:icon="@drawable/ic_menu_slideshow"
-                android:title="Manage locations" />
+                android:title="@string/manage_locations" />
             <item
                 android:id="@+id/nav_settings"
                 android:icon="@drawable/ic_menu_manage"
-                android:title="Settings" />
+                android:title="@string/settings" />
         </menu>
     </item>
 
