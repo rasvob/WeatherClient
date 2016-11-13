@@ -283,21 +283,25 @@ public class ManageLocationsActivity extends AppCompatActivity implements Google
                         getCurrentLocationFromApi();
                     }
                     else {
-                        Snackbar snackbar = Snackbar.make(coordinatorLayout, getApplicationContext().getString(R.string.make_sure_location_is_enabled), Snackbar.LENGTH_LONG);
-                        snackbar.setAction(R.string.enable_location, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                                startActivity(intent);
-                            }
-                        });
-                        snackbar.show();
+                        showLocationSnackbar();
                     }
                 }
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showLocationSnackbar() {
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, getApplicationContext().getString(R.string.make_sure_location_is_enabled), Snackbar.LENGTH_LONG);
+        snackbar.setAction(R.string.enable_location, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        });
+        snackbar.show();
     }
 
     private void getCurrentLocationFromApi() {
