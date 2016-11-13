@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -54,7 +55,8 @@ public class MainActivity extends AppCompatActivity
         Menu navMenu = navigationView.getMenu();
         navMenu.removeGroup(R.id.nav_group_locations);
         for (Location location : locations) {
-            navMenu.add(R.id.nav_group_locations, location.getId().intValue(), 100, location.getLocationName());
+            MenuItem item = navMenu.add(R.id.nav_group_locations, location.getId().intValue(), 100, location.getLocationName());
+            item.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_5));
         }
     }
 
