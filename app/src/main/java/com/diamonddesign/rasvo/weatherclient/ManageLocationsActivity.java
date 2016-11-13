@@ -1,12 +1,10 @@
 package com.diamonddesign.rasvo.weatherclient;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.location.SettingInjectorService;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -19,7 +17,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.ListPopupWindow;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,7 +25,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
@@ -37,28 +33,23 @@ import com.diamonddesign.rasvo.weatherclient.api.async.GpsLocationTask;
 import com.diamonddesign.rasvo.weatherclient.dialogs.DialogBuilders;
 import com.diamonddesign.rasvo.weatherclient.managelocation.AutoCompleteAdapter;
 import com.diamonddesign.rasvo.weatherclient.managelocation.LocationAdapter;
-import com.diamonddesign.rasvo.weatherclient.managelocation.callback.GpsEvent;
 import com.diamonddesign.rasvo.weatherclient.managelocation.callback.LocationOperationEvent;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
-import com.diamonddesign.rasvo.weatherclient.services.GPSLocationService;
 import com.diamonddesign.rasvo.weatherclient.services.Helpers;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
-
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.Request;
 
 
-public class ManageLocationsActivity extends AppCompatActivity {
+public class ManageLocationsActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private ArrayList<Location> locations;
     private AutoCompleteTextView autoCompleteTextView;
     boolean isAutoCompleteVisible = false;
@@ -67,7 +58,6 @@ public class ManageLocationsActivity extends AppCompatActivity {
     private RecyclerView locationRecyclerView;
     private LocationAdapter locationAdapter;
     private CoordinatorLayout coordinatorLayout;
-    //    private GPSLocationService locationService;
     private android.location.Location currentLocation;
     private GoogleApiClient googleApiClient;
 
@@ -84,7 +74,7 @@ public class ManageLocationsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
-            getSupportActionBar().setTitle("Manage locations");
+            getSupportActionBar().setTitle(R.string.manage_locations_toolbar_header);
         }
 
         if (toolbar != null) {
@@ -95,11 +85,6 @@ public class ManageLocationsActivity extends AppCompatActivity {
                 }
             });
         }
-
-//        locationService = new GPSLocationService(this);
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            locationService.getLocation();
-//        }
 
         try {
             buildApiClient();
@@ -126,16 +111,7 @@ public class ManageLocationsActivity extends AppCompatActivity {
         autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Location location = adapter.getItem(position);
-                if (location != null) {
-                    if (Location.find(Location.class, "key = ?", location.getKey()).size() == 0) {
-                        location.save();
-                        ManageLocationsActivity.this.locations.add(location);
-                        locationAdapter.notifyItemInserted(ManageLocationsActivity.this.locations.size() - 1);
-                    } else {
-                        Toast.makeText(ManageLocationsActivity.this, "Location already exists", Toast.LENGTH_SHORT).show();
-                    }
-                }
+                addNewLocation(position);
                 closeAutoComplete();
             }
         });
@@ -156,26 +132,23 @@ public class ManageLocationsActivity extends AppCompatActivity {
 
     private void buildApiClient() {
         googleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-                    @SuppressWarnings("MissingPermission")
-                    @Override
-                    public void onConnected(@Nullable Bundle bundle) {
-                        currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-                    }
-
-                    @Override
-                    public void onConnectionSuspended(int i) {
-                        googleApiClient.connect();
-                    }
-                })
-                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Log.d(this.getClass().getSimpleName(), "onConnectionFailed: " + connectionResult.getErrorMessage());
-                    }
-                })
                 .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
                 .build();
+    }
+
+    private void addNewLocation(int position) {
+        Location location = adapter.getItem(position);
+        if (location != null) {
+            if (Location.find(Location.class, "key = ?", location.getKey()).size() == 0) {
+                location.save();
+                ManageLocationsActivity.this.locations.add(location);
+                locationAdapter.notifyItemInserted(ManageLocationsActivity.this.locations.size() - 1);
+            } else {
+                Toast.makeText(ManageLocationsActivity.this, R.string.location_exists, Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private boolean isInternetAvailable() {
@@ -189,45 +162,48 @@ public class ManageLocationsActivity extends AppCompatActivity {
 
         switch (event.getOperation()) {
             case REMOVE:
-                locations.remove(pos);
-                locationAdapter.notifyItemRemoved(pos);
-                locationAdapter.notifyItemRangeChanged(pos, locations.size());
-                location.delete();
-
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, location.getLocationName() + " removed", Snackbar.LENGTH_LONG);
-                snackbar.setAction("Undo", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        locations.add(location);
-                        locationAdapter.notifyItemInserted(locations.size() - 1);
-                        location.save();
-                    }
-                });
-                snackbar.show();
+                removeLocation(location, pos);
                 break;
             case FAVOURITE:
-                boolean initialState = location.isFavourite();
-                location.setFavourite(!initialState);
-                location.save();
-                locationAdapter.notifyItemChanged(pos);
-
-                for (int i = 0; i < locations.size(); i++) {
-                    Location loc = locations.get(i);
-                    if (loc.isFavourite() && loc.getId() != location.getId()) {
-                        loc.setFavourite(false);
-                        locationAdapter.notifyItemChanged(i);
-                        loc.save();
-                    }
-                }
-
+                setLocationFavourite(location, pos);
                 break;
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onGpsEvent(GpsEvent event) {
-        //this.currentLocation = event.getLocation();
+    private void removeLocation(final Location location, int pos) {
+        locations.remove(pos);
+        locationAdapter.notifyItemRemoved(pos);
+        locationAdapter.notifyItemRangeChanged(pos, locations.size());
+        location.delete();
+
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, location.getLocationName() + getString(R.string.removed), Snackbar.LENGTH_LONG);
+        snackbar.setAction("Undo", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                locations.add(location);
+                locationAdapter.notifyItemInserted(locations.size() - 1);
+                location.save();
+            }
+        });
+        snackbar.show();
     }
+
+    private void setLocationFavourite(Location location, int pos) {
+        boolean initialState = location.isFavourite();
+        location.setFavourite(!initialState);
+        location.save();
+        locationAdapter.notifyItemChanged(pos);
+
+        for (int i = 0; i < locations.size(); i++) {
+            Location loc = locations.get(i);
+            if (loc.isFavourite() && loc.getId() != location.getId()) {
+                loc.setFavourite(false);
+                locationAdapter.notifyItemChanged(i);
+                loc.save();
+            }
+        }
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -253,13 +229,9 @@ public class ManageLocationsActivity extends AppCompatActivity {
         super.onStop();
         EventBus.getDefault().unregister(this);
 
-        if (googleApiClient != null && !googleApiClient.isConnected()) {
+        if (googleApiClient != null) {
             googleApiClient.disconnect();
         }
-
-//        if (locationService != null) {
-//            locationService.stopService();
-//        }
     }
 
     private void closeAutoComplete() {
@@ -293,49 +265,6 @@ public class ManageLocationsActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         switch (id) {
-//            case R.id.action_locations_gps:
-//                if (!Helpers.isInternetAvailable(this)) {
-//                    showInternetDialog();
-//                    break;
-//                }
-//
-//                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                    ActivityCompat.requestPermissions(this , new String[] {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_PERMISSION_FINE_LOCATION);
-//                }
-//                else {
-//                    if (!locationService.canGetCurrentLocation()) {
-//                        showLocationDialog();
-//                    }
-//                    else {
-//                        android.location.Location newLocation = locationService.getLocation();
-//                        Toast.makeText(this, "Getting current location...", Toast.LENGTH_SHORT).show();
-//                        if (newLocation != null) {
-//
-//                            double lat = newLocation.getLatitude();
-//                            double lon = newLocation.getLongitude();
-//
-//                            LocationApi api = new LocationApi();
-//                            Request request = api.buildGpsLocationRequest(lat, lon);
-//
-//                            GpsLocationTask task = new GpsLocationTask(this) {
-//                                @Override
-//                                protected void onPostExecute(Location location) {
-//                                    super.onPostExecute(location);
-//                                    if (location != null) {
-//                                        Toast.makeText(ManageLocationsActivity.this, location.getLocationName(), Toast.LENGTH_SHORT).show();
-//                                    }
-//                                }
-//                            };
-//
-//                            task.execute(request);
-//                        }
-//                        else {
-//                            Toast.makeText(this, "Try again", Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//                }
-//                break;
-
             case R.id.action_locations_gplay:
                 if (!Helpers.isInternetAvailable(this)) {
                     showInternetDialog();
@@ -349,41 +278,52 @@ public class ManageLocationsActivity extends AppCompatActivity {
                     if (!googleApiClient.isConnected()) {
                         googleApiClient.connect();
                     }
-                    android.location.Location newLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-                    if (newLocation != null) {
-
-                        double lat = newLocation.getLatitude();
-                        double lon = newLocation.getLongitude();
-
-                        LocationApi api = new LocationApi();
-                        Request request = api.buildGpsLocationRequest(lat, lon);
-
-                        GpsLocationTask task = new GpsLocationTask(this) {
-                            @Override
-                            protected void onPostExecute(Location location) {
-                                super.onPostExecute(location);
-                                if (location != null) {
-                                    if (Location.find(Location.class, "key = ?", location.getKey()).size() == 0) {
-                                        location.save();
-                                        ManageLocationsActivity.this.locations.add(location);
-                                        locationAdapter.notifyItemInserted(ManageLocationsActivity.this.locations.size() - 1);
-                                        Toast.makeText(ManageLocationsActivity.this, location.getLocationName() + " added", Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        Toast.makeText(ManageLocationsActivity.this, location.getLocationName() + " already exists", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            }
-                        };
-                        task.execute(request);
+                    refreshCurrentPosition();
+                    if (currentLocation != null) {
+                        getCurrentLocationFromApi();
                     }
                     else {
-                        Toast.makeText(this, "Make sure location is enabled and try again", Toast.LENGTH_SHORT).show();
+                        Snackbar snackbar = Snackbar.make(coordinatorLayout, getApplicationContext().getString(R.string.make_sure_location_is_enabled), Snackbar.LENGTH_LONG);
+                        snackbar.setAction(R.string.enable_location, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(intent);
+                            }
+                        });
+                        snackbar.show();
                     }
                 }
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getCurrentLocationFromApi() {
+        double lat = currentLocation.getLatitude();
+        double lon = currentLocation.getLongitude();
+
+        LocationApi api = new LocationApi();
+        Request request = api.buildGpsLocationRequest(lat, lon);
+
+        GpsLocationTask task = new GpsLocationTask(this) {
+            @Override
+            protected void onPostExecute(Location location) {
+                super.onPostExecute(location);
+                if (location != null) {
+                    if (Location.find(Location.class, "key = ?", location.getKey()).size() == 0) {
+                        location.save();
+                        ManageLocationsActivity.this.locations.add(location);
+                        locationAdapter.notifyItemInserted(ManageLocationsActivity.this.locations.size() - 1);
+                        Toast.makeText(ManageLocationsActivity.this, location.getLocationName() + getString(R.string.added), Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(ManageLocationsActivity.this, location.getLocationName() + getString(R.string.already_exists), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        };
+        task.execute(request);
     }
 
     private void showLocationDialog() {
@@ -437,12 +377,34 @@ public class ManageLocationsActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_PERMISSION_FINE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Permission granted, please click icon one more time", Toast.LENGTH_SHORT).show();
-                    if (googleApiClient != null && !googleApiClient.isConnected()) {
+                    Toast.makeText(this, R.string.location_permission_granted, Toast.LENGTH_SHORT).show();
+                    if (googleApiClient != null) {
                         googleApiClient.connect();
                     }
                 }
                 break;
         }
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void refreshCurrentPosition() {
+        currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            refreshCurrentPosition();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        googleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(ManageLocationsActivity.class.getSimpleName(), "onConnectionFailed: ");
     }
 }
