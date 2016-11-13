@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,6 +17,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.diamonddesign.rasvo.weatherclient.fragments.DailyFragment;
+import com.diamonddesign.rasvo.weatherclient.fragments.HourlyFragment;
+import com.diamonddesign.rasvo.weatherclient.fragments.NowFragment;
+import com.diamonddesign.rasvo.weatherclient.fragments.adapters.ViewPagerAdapter;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
 
 import java.util.List;
@@ -24,6 +30,9 @@ public class MainActivity extends AppCompatActivity
 
     private NavigationView navigationView;
     private List<Location> locations;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private ViewPagerAdapter viewPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +41,11 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        tabLayout = (TabLayout) findViewById(R.id.tabsMain);
+        viewPager = (ViewPager) findViewById(R.id.viewpagerMain);
 
+        setupViewPager();
+        tabLayout.setupWithViewPager(viewPager);
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -46,6 +59,14 @@ public class MainActivity extends AppCompatActivity
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
         }
+    }
+
+    private void setupViewPager() {
+        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPagerAdapter.addFragment(NowFragment.newInstance(), getString(R.string.now));
+        viewPagerAdapter.addFragment(HourlyFragment.newInstance(), getString(R.string.hourly));
+        viewPagerAdapter.addFragment(DailyFragment.newInstance(), getString(R.string.daily));
+        viewPager.setAdapter(viewPagerAdapter);
     }
 
     @Override
