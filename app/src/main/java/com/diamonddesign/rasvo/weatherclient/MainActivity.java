@@ -2,13 +2,9 @@ package com.diamonddesign.rasvo.weatherclient;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,10 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-import com.diamonddesign.rasvo.weatherclient.api.CurrentConditionsApi;
-import com.diamonddesign.rasvo.weatherclient.api.async.CurrentConditionsTask;
 import com.diamonddesign.rasvo.weatherclient.enums.TemperatureUnits;
 import com.diamonddesign.rasvo.weatherclient.enums.Units;
 import com.diamonddesign.rasvo.weatherclient.fragments.DailyFragment;
@@ -30,7 +23,6 @@ import com.diamonddesign.rasvo.weatherclient.fragments.adapters.ViewPagerAdapter
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
 import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
-import com.orm.SugarRecord;
 
 import java.util.List;
 
@@ -43,7 +35,7 @@ public class MainActivity extends AppCompatActivity
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
-    private UnitContext strategyContext;
+    private UnitContext unitContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +67,7 @@ public class MainActivity extends AppCompatActivity
             navigationView.setNavigationItemSelectedListener(this);
         }
 
-        strategyContext = new UnitContext(TemperatureUnits.CELSIUS, Units.METRIC);
+        unitContext = new UnitContext(TemperatureUnits.CELSIUS, Units.METRIC);
     }
 
     private void setupViewPager() {
@@ -135,7 +127,6 @@ public class MainActivity extends AppCompatActivity
                 return true;
         }
 
-
         return false;
     }
 
@@ -156,25 +147,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         final Location location = Location.findById(Location.class, id);
-        CurrentConditionsApi api = new CurrentConditionsApi();
-        CurrentConditionsTask task = new CurrentConditionsTask() {
-            @Override
-            protected void onPostExecute(CurrentConditions conditions) {
-                super.onPostExecute(conditions);
-                if (conditions != null) {
-                    conditions.setKey(location.getKey());
-                    SugarRecord.deleteAll(CurrentConditions.class, "key = ?", location.getKey());
-                    conditions.save();
-                    Log.d(TAG, "onPostExecute: " + SugarRecord.count(CurrentConditions.class));
-                    return;
-                }
-                Toast.makeText(MainActivity.this, getString(R.string.error_occured), Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        task.execute(api.buildCurrentConditionsRequst(location.getKey()));
-        //TODO: Save with location key
-
+        setupCurrentLocation(location);
         closeDrawer();
         return true;
     }
@@ -186,9 +159,8 @@ public class MainActivity extends AppCompatActivity
 
     private void setupCurrentLocation(Location location) {
         getSupportActionBar().setTitle(location.getLocalizedName());
-
         NowFragment nowFragment = (NowFragment) viewPagerAdapter.getItem(0);
-
-
+        nowFragment.setUnitContext(unitContext);
+        nowFragment.loadData(location);
     }
 }

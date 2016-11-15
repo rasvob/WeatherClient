@@ -61,7 +61,7 @@ public class CurrentConditionsTask extends AsyncTask<Request, Void, CurrentCondi
             conditions.setVisibilityMetric(visibility.getJSONObject("Metric").getDouble("Value"));
             conditions.setVisibilityImperial(visibility.getJSONObject("Imperial").getDouble("Value"));
 
-            conditions.setCloudCover(body.getDouble("CloudCover"));
+            conditions.setCloudCover(body.getInt("CloudCover"));
 
             JSONObject pressure = body.getJSONObject("Pressure");
             conditions.setPressureMetric(pressure.getJSONObject("Metric").getDouble("Value"));

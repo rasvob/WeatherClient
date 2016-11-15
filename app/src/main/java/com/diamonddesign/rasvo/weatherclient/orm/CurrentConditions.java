@@ -232,7 +232,7 @@ public class CurrentConditions extends SugarRecord {
         //Values
         temp.setValue(String.valueOf(temperatureStrategy.getTemperature(this)));
         realFeel.setValue(String.valueOf(temperatureStrategy.getRealFeelTemperature(this)));
-        cloudCover.setValue(String.valueOf(cloudCover));
+        cloudCover.setValue(String.valueOf(this.cloudCover));
 
         humidity.setValue(String.valueOf(this.relativeHumidity));
         uvIndex.setValue(String.valueOf(this.uvIndex));
@@ -242,7 +242,30 @@ public class CurrentConditions extends SugarRecord {
         windSpeed.setValue(String.valueOf(unitStrategy.getWindSpeed(this)));
         visibility.setValue(String.valueOf(unitStrategy.getVisibility(this)));
 
-        //
+        //Units
+        temp.setUnit(temperatureStrategy.getUnit());
+        realFeel.setUnit(temperatureStrategy.getUnit());
+        cloudCover.setUnit(context.getString(R.string.percent));
+
+        humidity.setUnit(context.getString(R.string.percent));
+        uvIndex.setUnit("");
+        pressure.setUnit(unitStrategy.getPressureUnit());
+
+        windDirection.setUnit("");
+        windSpeed.setUnit(unitStrategy.getWindSpeedUnit());
+        visibility.setUnit(unitStrategy.getVisibilityUnit());
+
+        items.add(temp);
+        items.add(realFeel);
+        items.add(cloudCover);
+
+        items.add(humidity);
+        items.add(uvIndex);
+        items.add(pressure);
+
+        items.add(windDirection);
+        items.add(windSpeed);
+        items.add(visibility);
 
         return items;
     }
