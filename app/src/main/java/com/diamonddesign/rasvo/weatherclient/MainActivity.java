@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,23 +17,33 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.diamonddesign.rasvo.weatherclient.api.CurrentConditionsApi;
+import com.diamonddesign.rasvo.weatherclient.api.async.CurrentConditionsTask;
+import com.diamonddesign.rasvo.weatherclient.enums.TemperatureUnits;
+import com.diamonddesign.rasvo.weatherclient.enums.Units;
 import com.diamonddesign.rasvo.weatherclient.fragments.DailyFragment;
 import com.diamonddesign.rasvo.weatherclient.fragments.HourlyFragment;
 import com.diamonddesign.rasvo.weatherclient.fragments.NowFragment;
 import com.diamonddesign.rasvo.weatherclient.fragments.adapters.ViewPagerAdapter;
+import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
+import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
+import com.orm.SugarRecord;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private NavigationView navigationView;
     private List<Location> locations;
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
+    private UnitContext strategyContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +54,10 @@ public class MainActivity extends AppCompatActivity
 
         tabLayout = (TabLayout) findViewById(R.id.tabsMain);
         viewPager = (ViewPager) findViewById(R.id.viewpagerMain);
+
+        //Hack ORM
+        Location.findById(Location.class, (long)1);
+        CurrentConditions.findById(CurrentConditions.class, (long)1);
 
         setupViewPager();
         tabLayout.setupWithViewPager(viewPager);
@@ -59,6 +74,8 @@ public class MainActivity extends AppCompatActivity
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
         }
+
+        strategyContext = new UnitContext(TemperatureUnits.CELSIUS, Units.METRIC);
     }
 
     private void setupViewPager() {
@@ -72,12 +89,16 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        locations = Location.listAll(Location.class);
-        Menu navMenu = navigationView.getMenu();
-        navMenu.removeGroup(R.id.nav_group_locations);
-        for (Location location : locations) {
-            MenuItem item = navMenu.add(R.id.nav_group_locations, location.getId().intValue(), 100, location.getLocationName());
-            item.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_5));
+        try {
+            locations = Location.listAll(Location.class);
+            Menu navMenu = navigationView.getMenu();
+            navMenu.removeGroup(R.id.nav_group_locations);
+            for (Location location : locations) {
+                MenuItem item = navMenu.add(R.id.nav_group_locations, location.getId().intValue(), 100, location.getLocationName());
+                item.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_5));
+            }
+        } catch (Exception exc) {
+            exc.printStackTrace();
         }
     }
 
@@ -125,12 +146,34 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.nav_settings:
-                break;
+                closeDrawer();
+                return true;
             case R.id.nav_manage_location:
                 Intent manageLocations = new Intent(getApplicationContext(), ManageLocationsActivity.class);
                 startActivity(manageLocations);
-                break;
+                closeDrawer();
+                return true;
         }
+
+        final Location location = Location.findById(Location.class, id);
+        CurrentConditionsApi api = new CurrentConditionsApi();
+        CurrentConditionsTask task = new CurrentConditionsTask() {
+            @Override
+            protected void onPostExecute(CurrentConditions conditions) {
+                super.onPostExecute(conditions);
+                if (conditions != null) {
+                    conditions.setKey(location.getKey());
+                    SugarRecord.deleteAll(CurrentConditions.class, "key = ?", location.getKey());
+                    conditions.save();
+                    Log.d(TAG, "onPostExecute: " + SugarRecord.count(CurrentConditions.class));
+                    return;
+                }
+                Toast.makeText(MainActivity.this, getString(R.string.error_occured), Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        task.execute(api.buildCurrentConditionsRequst(location.getKey()));
+        //TODO: Save with location key
 
         closeDrawer();
         return true;
@@ -139,5 +182,13 @@ public class MainActivity extends AppCompatActivity
     private void closeDrawer() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+    }
+
+    private void setupCurrentLocation(Location location) {
+        getSupportActionBar().setTitle(location.getLocalizedName());
+
+        NowFragment nowFragment = (NowFragment) viewPagerAdapter.getItem(0);
+
+
     }
 }

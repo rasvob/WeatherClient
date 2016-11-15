@@ -4,10 +4,32 @@
     android:layout_height="match_parent"
     tools:context="com.diamonddesign.rasvo.weatherclient.fragments.NowFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/now" />
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:scaleType="centerCrop"
+            android:src="@drawable/header_bg_04"
+            android:layout_width="match_parent"
+            android:layout_height="100dp" />
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/nowSwipeRefresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/nowRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            </android.support.v7.widget.RecyclerView>
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+    </LinearLayout>
+
 
 </FrameLayout>
