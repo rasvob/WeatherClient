@@ -1,6 +1,7 @@
 package com.diamonddesign.rasvo.weatherclient.orm;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 
 import com.diamonddesign.rasvo.weatherclient.R;

@@ -77,7 +77,7 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
         adapter = new NowFragmentAdapter(data);
 
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL));
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
         adapter.notifyDataSetChanged();

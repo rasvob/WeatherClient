@@ -164,5 +164,9 @@ public class MainActivity extends AppCompatActivity
         NowFragment nowFragment = (NowFragment) viewPagerAdapter.getItem(0);
         nowFragment.setUnitContext(unitContext);
         nowFragment.loadData(location);
+
+        DailyFragment dailyFragment = (DailyFragment) viewPagerAdapter.getItem(2);
+        dailyFragment.setUnitContext(unitContext);
+        dailyFragment.loadData(location);
     }
 }

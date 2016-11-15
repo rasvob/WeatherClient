@@ -1,6 +1,9 @@
 package com.diamonddesign.rasvo.weatherclient.orm;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 
 import com.diamonddesign.rasvo.weatherclient.R;
 import com.diamonddesign.rasvo.weatherclient.models.NowGridItem;
@@ -477,5 +480,37 @@ public class DailyConditions extends SugarRecord {
         items.add(ice);
 
         return items;
+    }
+
+    public Drawable getIconDrawable(Context context, boolean isDay) {
+        Resources resources = context.getResources();
+        int id = resources.getIdentifier("ic_" + (isDay ? this.dayIcon : this.nightIcon), "drawable", context.getPackageName());
+        return ContextCompat.getDrawable(context, id);
+    }
+
+    public String getDayAndMonth(Context context) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMAN);
+        try {
+            Date parse = format.parse(this.date);
+            SimpleDateFormat newFormat = new SimpleDateFormat("dd. MM.", Locale.GERMAN);
+            newFormat.setTimeZone(TimeZone.getTimeZone(TimeZone.getDefault().getID()));
+            return newFormat.format(parse);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return context.getString(R.string.no_info);
+    }
+
+    public String getDayName(Context context) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMAN);
+        try {
+            Date parse = format.parse(this.date);
+            SimpleDateFormat newFormat = new SimpleDateFormat("EEE", Locale.ENGLISH);
+            newFormat.setTimeZone(TimeZone.getTimeZone(TimeZone.getDefault().getID()));
+            return newFormat.format(parse);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return context.getString(R.string.no_info);
     }
 }
