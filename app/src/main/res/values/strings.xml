@@ -51,4 +51,14 @@
     <string name="wind_speed">Wind Speed</string>
     <string name="visibility">Visibility</string>
     <string name="no_info">No info</string>
+
+    <string name="day">Day</string>
+    <string name="night">Night</string>
+    <string name="temp_min">Temp. Min</string>
+    <string name="temp_max">Temp. Max</string>
+    <string name="feel_min">Feel Min</string>
+    <string name="feel_max">Feel Max</string>
+    <string name="rain">Rain</string>
+    <string name="snow">Snow</string>
+    <string name="ice">Ice</string>
 </resources>

@@ -29,4 +29,12 @@ public class Helpers {
         }
         return false;
     }
+
+    public static double toFahrenheit(double celsius) {
+        return celsius * (9.0/5.0) + 32;
+    }
+
+    public static double toMilePerHour(double kmh) {
+        return kmh / 1.609344;
+    }
 }

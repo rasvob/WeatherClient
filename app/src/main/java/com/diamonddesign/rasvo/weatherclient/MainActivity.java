@@ -21,6 +21,7 @@ import com.diamonddesign.rasvo.weatherclient.fragments.HourlyFragment;
 import com.diamonddesign.rasvo.weatherclient.fragments.NowFragment;
 import com.diamonddesign.rasvo.weatherclient.fragments.adapters.ViewPagerAdapter;
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
+import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
 import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
 
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity
         //Hack ORM
         Location.findById(Location.class, (long)1);
         CurrentConditions.findById(CurrentConditions.class, (long)1);
+        DailyConditions.findById(DailyConditions.class, (long)1);
 
         setupViewPager();
         tabLayout.setupWithViewPager(viewPager);

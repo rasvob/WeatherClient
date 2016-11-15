@@ -1,6 +1,7 @@
 package com.diamonddesign.rasvo.weatherclient.strategy;
 
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
+import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
 
 /**
  * Created by rasvo on 14.11.2016.
@@ -20,6 +21,11 @@ public class MetricStrategy implements IUnitStrategy {
     @Override
     public double getPressure(CurrentConditions conditions) {
         return conditions.getPressureMetric();
+    }
+
+    @Override
+    public double getWindSpeed(DailyConditions conditions, boolean isDay) {
+        return isDay ? conditions.getDayWindSpeedMetric() : conditions.getNightWindSpeedMetric();
     }
 
     @Override

@@ -9,8 +9,12 @@ import com.diamonddesign.rasvo.weatherclient.strategy.ITemperatureStrategy;
 import com.diamonddesign.rasvo.weatherclient.strategy.IUnitStrategy;
 import com.orm.SugarRecord;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by rasvo on 13.11.2016.
@@ -268,5 +272,18 @@ public class CurrentConditions extends SugarRecord {
         items.add(visibility);
 
         return items;
+    }
+
+    public String getFormattedDate(Context context) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMAN);
+        try {
+            Date parse = format.parse(this.date);
+            SimpleDateFormat newFormat = new SimpleDateFormat("dd. MM. yyyy HH:mm:ss", Locale.GERMAN);
+            newFormat.setTimeZone(TimeZone.getTimeZone(TimeZone.getDefault().getID()));
+            return newFormat.format(parse);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return context.getString(R.string.no_info);
     }
 }

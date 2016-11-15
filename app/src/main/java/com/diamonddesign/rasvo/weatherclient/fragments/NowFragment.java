@@ -30,8 +30,13 @@ import com.diamonddesign.rasvo.weatherclient.orm.Location;
 import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
 import com.orm.SugarRecord;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private SwipeRefreshLayout refreshLayout;
@@ -102,7 +107,7 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
             ArrayList<NowGridItem> nowGridItems = conditions.mapToGridItems(getContext(), unitContext.getTemperatureStrategy(), unitContext.getUnitStrategy());
 
             headerText.setText(conditions.getWeatherText());
-            headerDate.setText(conditions.getDate());
+            headerDate.setText(conditions.getFormattedDate(getContext()));
             setHeaderIcon(conditions.getWeatherIcon());
 
             data.addAll(nowGridItems);
@@ -134,7 +139,7 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
                     data.addAll(nowGridItems);
 
                     headerText.setText(conditions.getWeatherText());
-                    headerDate.setText(conditions.getDate());
+                    headerDate.setText(conditions.getFormattedDate(getContext()));
                     setHeaderIcon(conditions.getWeatherIcon());
 
                     adapter.notifyDataSetChanged();
