@@ -1,6 +1,7 @@
 package com.diamonddesign.rasvo.weatherclient.fragments;
 
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,6 +24,8 @@ import com.diamonddesign.rasvo.weatherclient.MainActivity;
 import com.diamonddesign.rasvo.weatherclient.R;
 import com.diamonddesign.rasvo.weatherclient.api.CurrentConditionsApi;
 import com.diamonddesign.rasvo.weatherclient.api.async.CurrentConditionsTask;
+import com.diamonddesign.rasvo.weatherclient.enums.TemperatureUnits;
+import com.diamonddesign.rasvo.weatherclient.enums.Units;
 import com.diamonddesign.rasvo.weatherclient.fragments.adapters.NowFragmentAdapter;
 import com.diamonddesign.rasvo.weatherclient.models.NowGridItem;
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
@@ -44,10 +47,11 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
     private NowFragmentAdapter adapter;
     private ArrayList<NowGridItem> data = new ArrayList<>();
     private Location currentLocation;
-    private UnitContext unitContext;
+    private UnitContext unitContext = new UnitContext(TemperatureUnits.CELSIUS, Units.METRIC);
     private ImageView headerIcon;
     private TextView headerText;
     private TextView headerDate;
+    private ICurrentConditionRefreshCallback currentConditionRefreshCallback;
 
     public NowFragment() {
 
@@ -84,6 +88,10 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
 
         resetData();
 
+        if (currentLocation != null) {
+            loadData(currentLocation);
+        }
+
         refreshLayout.setOnRefreshListener(this);
 
         return view;
@@ -92,9 +100,6 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
     @Override
     public void onResume() {
         super.onResume();
-        if (currentLocation != null) {
-            loadData(currentLocation);
-        }
     }
 
     public void loadData(final Location location) {
@@ -144,6 +149,10 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
 
                     adapter.notifyDataSetChanged();
 
+                    if (currentConditionRefreshCallback != null) {
+                        currentConditionRefreshCallback.refreshCurrentHeader(currentLocation);
+                    }
+
                     refreshLayout.setRefreshing(false);
                     return;
                 }
@@ -162,6 +171,14 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
         this.unitContext = unitContext;
     }
 
+    public ICurrentConditionRefreshCallback getCurrentConditionRefreshCallback() {
+        return currentConditionRefreshCallback;
+    }
+
+    public void setCurrentConditionRefreshCallback(ICurrentConditionRefreshCallback currentConditionRefreshCallback) {
+        this.currentConditionRefreshCallback = currentConditionRefreshCallback;
+    }
+
     public void resetData() {
         data.clear();
         headerText.setText(getString(R.string.no_info));
@@ -175,5 +192,13 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
         Resources resources = getContext().getResources();
         int id = resources.getIdentifier("ic_" + iconCode, "drawable", getContext().getPackageName());
         headerIcon.setImageDrawable(ContextCompat.getDrawable(getContext(), id));
+    }
+
+    public void setCurrentLocation(Location currentLocation) {
+        this.currentLocation = currentLocation;
+    }
+
+    public interface ICurrentConditionRefreshCallback {
+        void refreshCurrentHeader(Location location);
     }
 }

@@ -1,6 +1,7 @@
 package com.diamonddesign.rasvo.weatherclient;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
@@ -13,6 +14,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.diamonddesign.rasvo.weatherclient.enums.TemperatureUnits;
 import com.diamonddesign.rasvo.weatherclient.enums.Units;
@@ -20,15 +24,17 @@ import com.diamonddesign.rasvo.weatherclient.fragments.DailyFragment;
 import com.diamonddesign.rasvo.weatherclient.fragments.HourlyFragment;
 import com.diamonddesign.rasvo.weatherclient.fragments.NowFragment;
 import com.diamonddesign.rasvo.weatherclient.fragments.adapters.ViewPagerAdapter;
+import com.diamonddesign.rasvo.weatherclient.models.NowGridItem;
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
 import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, NowFragment.ICurrentConditionRefreshCallback {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private NavigationView navigationView;
@@ -37,6 +43,9 @@ public class MainActivity extends AppCompatActivity
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
     private UnitContext unitContext;
+    private NowFragment nowFragment = new NowFragment();
+    private DailyFragment dailyFragment = new DailyFragment();
+    private HourlyFragment hourlyFragment = new HourlyFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,13 +79,31 @@ public class MainActivity extends AppCompatActivity
         }
 
         unitContext = new UnitContext(TemperatureUnits.CELSIUS, Units.METRIC);
+
+        nowFragment.setUnitContext(unitContext);
+        nowFragment.setCurrentConditionRefreshCallback(this);
+        //hourly
+        dailyFragment.setUnitContext(unitContext);
+
+        List<Location> fav = Location.find(Location.class, "is_favourite = ?", "1");
+
+        if (fav.size() > 0) {
+            setupCurrentLocation(fav.get(0), true);
+        }
+        else {
+            Location first = Location.first(Location.class);
+
+            if (first != null) {
+                setupCurrentLocation(first, true);
+            }
+        }
     }
 
     private void setupViewPager() {
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragment(NowFragment.newInstance(), getString(R.string.now));
-        viewPagerAdapter.addFragment(HourlyFragment.newInstance(), getString(R.string.hourly));
-        viewPagerAdapter.addFragment(DailyFragment.newInstance(), getString(R.string.daily));
+        viewPagerAdapter.addFragment(nowFragment, getString(R.string.now));
+        viewPagerAdapter.addFragment(hourlyFragment, getString(R.string.hourly));
+        viewPagerAdapter.addFragment(dailyFragment, getString(R.string.daily));
         viewPager.setAdapter(viewPagerAdapter);
     }
 
@@ -149,7 +176,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         final Location location = Location.findById(Location.class, id);
-        setupCurrentLocation(location);
+        setupCurrentLocation(location, false);
         closeDrawer();
         return true;
     }
@@ -159,14 +186,73 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
     }
 
-    private void setupCurrentLocation(Location location) {
+    private void setupCurrentLocation(Location location, boolean isInit) {
         getSupportActionBar().setTitle(location.getLocalizedName());
         NowFragment nowFragment = (NowFragment) viewPagerAdapter.getItem(0);
-        nowFragment.setUnitContext(unitContext);
-        nowFragment.loadData(location);
+        nowFragment.setCurrentLocation(location);
 
         DailyFragment dailyFragment = (DailyFragment) viewPagerAdapter.getItem(2);
-        dailyFragment.setUnitContext(unitContext);
-        dailyFragment.loadData(location);
+        dailyFragment.setCurrentLocation(location);
+
+        HourlyFragment hourlyFragment = (HourlyFragment) viewPagerAdapter.getItem(1);
+
+        setDrawerHeaderInfo(location);
+
+        if (isInit) {
+            return;
+        }
+
+        int selectedTabPosition = tabLayout.getSelectedTabPosition();
+        switch (selectedTabPosition) {
+            case 0:
+                nowFragment.loadData(location);
+                break;
+            case 1:
+
+                break;
+            case 2:
+                dailyFragment.loadData(location);
+                break;
+        }
+    }
+
+    private void setDrawerHeaderInfo(Location location) {
+        resetHeaderView();
+        List<CurrentConditions> currentConditions = CurrentConditions.find(CurrentConditions.class, "key = ?", location.getKey());
+        if (currentConditions.size() > 0) {
+            CurrentConditions conditions = currentConditions.get(0);
+
+            View headerView = navigationView.getHeaderView(0);
+            TextView loc = (TextView) headerView.findViewById(R.id.textViewHeaderLocation);
+            TextView phrase = (TextView) headerView.findViewById(R.id.textViewHeaderInfo);
+            TextView temp = (TextView) headerView.findViewById(R.id.textViewHeaderTemp);
+            ImageView icon = (ImageView) headerView.findViewById(R.id.imageViewHeaderIcon);
+
+            loc.setText(location.getLocationName());
+            phrase.setText(conditions.getWeatherText());
+            temp.setText(unitContext.getTemperatureStrategy().getTemperature(conditions) + " " + unitContext.getTemperatureStrategy().getUnit());
+            Resources resources = this.getResources();
+            int id = resources.getIdentifier("ic_" + conditions.getWeatherIcon(), "drawable", this.getPackageName());
+            ContextCompat.getDrawable(getApplicationContext(), id);
+            icon.setImageDrawable(getDrawable(id));
+        }
+    }
+
+    private void resetHeaderView() {
+        View headerView = navigationView.getHeaderView(0);
+        TextView loc = (TextView) headerView.findViewById(R.id.textViewHeaderLocation);
+        TextView phrase = (TextView) headerView.findViewById(R.id.textViewHeaderInfo);
+        TextView temp = (TextView) headerView.findViewById(R.id.textViewHeaderTemp);
+        ImageView icon = (ImageView) headerView.findViewById(R.id.imageViewHeaderIcon);
+
+        loc.setText(getString(R.string.no_info));
+        phrase.setText(getString(R.string.no_info));
+        temp.setText(getString(R.string.unknown_value));
+        icon.setImageDrawable(getDrawable(R.drawable.ic_1));
+    }
+
+    @Override
+    public void refreshCurrentHeader(Location location) {
+        setDrawerHeaderInfo(location);
     }
 }

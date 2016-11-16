@@ -8,9 +8,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.diamonddesign.rasvo.weatherclient.R;
+import com.diamonddesign.rasvo.weatherclient.enums.TemperatureUnits;
+import com.diamonddesign.rasvo.weatherclient.enums.Units;
+import com.diamonddesign.rasvo.weatherclient.orm.Location;
+import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
 
 
 public class HourlyFragment extends Fragment {
+    private Location currentLocation;
+    private UnitContext unitContext = new UnitContext(TemperatureUnits.CELSIUS, Units.METRIC);
+
     public HourlyFragment() {
 
     }
@@ -31,4 +38,19 @@ public class HourlyFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_hourly, container, false);
     }
 
+    public Location getCurrentLocation() {
+        return currentLocation;
+    }
+
+    public void setCurrentLocation(Location currentLocation) {
+        this.currentLocation = currentLocation;
+    }
+
+    public UnitContext getUnitContext() {
+        return unitContext;
+    }
+
+    public void setUnitContext(UnitContext unitContext) {
+        this.unitContext = unitContext;
+    }
 }

@@ -19,10 +19,11 @@
 
         >
         <ImageView
+            android:tint="@color/white"
             android:id="@+id/imageViewHeaderIcon"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            app:srcCompat="@drawable/ic_weather_cloud" />
+            app:srcCompat="@drawable/ic_1" />
 
         <TextView
             android:id="@+id/textViewHeaderTemp"
@@ -30,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="16dp"
-            android:text="-4°"
+            android:text="@string/unknown_value"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
     </LinearLayout>
 
@@ -40,13 +41,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="5dp"
-        android:text="Ostrava, Cze"
+        android:text="@string/unknown_value"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
 
     <TextView
         android:id="@+id/textViewHeaderInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Mixed rain and snow Friday; watch for icy spots" />
+        android:text="@string/no_info" />
 
 </LinearLayout>
