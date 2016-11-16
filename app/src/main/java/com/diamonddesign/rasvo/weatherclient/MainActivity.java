@@ -3,7 +3,9 @@ package com.diamonddesign.rasvo.weatherclient;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.provider.*;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.design.widget.NavigationView;
@@ -12,6 +14,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,8 +31,13 @@ import com.diamonddesign.rasvo.weatherclient.models.NowGridItem;
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
+import com.diamonddesign.rasvo.weatherclient.sharedprefs.SharedPrefsState;
+import com.diamonddesign.rasvo.weatherclient.sharedprefs.SharedPrefsWrapper;
 import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
 
+import org.greenrobot.eventbus.EventBus;
+
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +86,11 @@ public class MainActivity extends AppCompatActivity
             navigationView.setNavigationItemSelectedListener(this);
         }
 
-        unitContext = new UnitContext(TemperatureUnits.CELSIUS, Units.METRIC);
+        SharedPrefsWrapper wrapper = new SharedPrefsWrapper(this);
+        SharedPrefsState.getInstance().setTemperatureUnits(wrapper.getTemperatureUnits());
+        SharedPrefsState.getInstance().setUnits(wrapper.getOtherUnits());
+
+        unitContext = new UnitContext(SharedPrefsState.getInstance().getTemperatureUnits(), SharedPrefsState.getInstance().getUnits());
 
         nowFragment.setUnitContext(unitContext);
         nowFragment.setCurrentConditionRefreshCallback(this);
@@ -121,6 +133,43 @@ public class MainActivity extends AppCompatActivity
         } catch (Exception exc) {
             exc.printStackTrace();
         }
+
+        SharedPrefsWrapper wrapper = new SharedPrefsWrapper(this);
+        SharedPrefsState.getInstance().setTemperatureUnits(wrapper.getTemperatureUnits());
+        SharedPrefsState.getInstance().setUnits(wrapper.getOtherUnits());
+        unitContext.setTemperatureStrategy(SharedPrefsState.getInstance().getTemperatureUnits());
+        unitContext.setUnitStrategy(SharedPrefsState.getInstance().getUnits());
+        updateUnitContext();
+
+        int selectedTabPosition = tabLayout.getSelectedTabPosition();
+
+        switch (selectedTabPosition) {
+            case 0:
+                NowFragment item0 = (NowFragment)viewPagerAdapter.getItem(0);
+                Location currentLocation0 = item0.getCurrentLocation();
+                try {
+                    item0.loadData(currentLocation0);
+                    refreshCurrentHeader(currentLocation0);
+                } catch (Exception exc) {
+                    exc.printStackTrace();
+                }
+                break;
+            case 1:
+
+                break;
+            case 2:
+                DailyFragment item2 = (DailyFragment)viewPagerAdapter.getItem(2);
+                Location currentLocation2 = item2.getCurrentLocation();
+                try {
+                    item2.loadData(currentLocation2);
+                    refreshCurrentHeader(currentLocation2);
+                } catch (Exception exc) {
+                    exc.printStackTrace();
+                }
+                break;
+        }
+
+        Log.d(TAG, "onResume: ");
     }
 
     @Override
@@ -149,10 +198,8 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_settings:
-                return true;
-            case R.id.action_refresh:
-                return true;
-            case R.id.action_current_position:
+                Intent settings = new Intent(this, Settings.class);
+                startActivity(settings);
                 return true;
         }
 
@@ -166,6 +213,8 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.nav_settings:
+                Intent settings = new Intent(this, Settings.class);
+                startActivity(settings);
                 closeDrawer();
                 return true;
             case R.id.nav_manage_location:
@@ -216,6 +265,17 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void updateUnitContext() {
+        NowFragment nowFragment = (NowFragment) viewPagerAdapter.getItem(0);
+        nowFragment.setUnitContext(unitContext);
+
+        DailyFragment dailyFragment = (DailyFragment) viewPagerAdapter.getItem(2);
+        dailyFragment.setUnitContext(unitContext);
+
+        HourlyFragment hourlyFragment = (HourlyFragment) viewPagerAdapter.getItem(1);
+        hourlyFragment.setUnitContext(unitContext);
+    }
+
     private void setDrawerHeaderInfo(Location location) {
         resetHeaderView();
         List<CurrentConditions> currentConditions = CurrentConditions.find(CurrentConditions.class, "key = ?", location.getKey());
@@ -230,7 +290,8 @@ public class MainActivity extends AppCompatActivity
 
             loc.setText(location.getLocationName());
             phrase.setText(conditions.getWeatherText());
-            temp.setText(unitContext.getTemperatureStrategy().getTemperature(conditions) + " " + unitContext.getTemperatureStrategy().getUnit());
+            DecimalFormat decimalFormat = new DecimalFormat("#.00");
+            temp.setText(decimalFormat.format(unitContext.getTemperatureStrategy().getTemperature(conditions)) + " " + unitContext.getTemperatureStrategy().getUnit());
             Resources resources = this.getResources();
             int id = resources.getIdentifier("ic_" + conditions.getWeatherIcon(), "drawable", this.getPackageName());
             ContextCompat.getDrawable(getApplicationContext(), id);

@@ -30,8 +30,12 @@ import com.diamonddesign.rasvo.weatherclient.fragments.adapters.NowFragmentAdapt
 import com.diamonddesign.rasvo.weatherclient.models.NowGridItem;
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
+import com.diamonddesign.rasvo.weatherclient.sharedprefs.SharedPrefsState;
 import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
 import com.orm.SugarRecord;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -93,6 +97,7 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
         }
 
         refreshLayout.setOnRefreshListener(this);
+        refreshLayout.setColorSchemeColors(ContextCompat.getColor(getContext(), R.color.colorPrimary), ContextCompat.getColor(getContext(), R.color.colorAccent),ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
 
         return view;
     }
@@ -201,4 +206,16 @@ public class NowFragment extends Fragment implements SwipeRefreshLayout.OnRefres
     public interface ICurrentConditionRefreshCallback {
         void refreshCurrentHeader(Location location);
     }
+
+    public Location getCurrentLocation() {
+        return currentLocation;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUnitContextEvent(UnitContext event) {
+        if (currentLocation != null) {
+            loadData(currentLocation);
+        }
+    }
+
 }

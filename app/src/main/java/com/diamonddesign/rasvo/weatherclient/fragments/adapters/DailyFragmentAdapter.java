@@ -12,6 +12,7 @@ import com.diamonddesign.rasvo.weatherclient.R;
 import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
 import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 /**
@@ -43,8 +44,13 @@ public class DailyFragmentAdapter extends RecyclerView.Adapter<DailyFragmentAdap
         holder.date.setText(daily.getDayAndMonth(context));
         holder.day.setText(daily.getDayName(context));
         holder.phrase.setText(daily.getDayPhrase());
-        holder.tempMin.setText(String.valueOf(unitContext.getTemperatureStrategy().getTemperatureMin(daily)));
-        holder.tempMax.setText(String.valueOf(unitContext.getTemperatureStrategy().getTemperatureMax(daily)));
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.00");
+        String min = decimalFormat.format(unitContext.getTemperatureStrategy().getTemperatureMin(daily));
+        String max = decimalFormat.format(unitContext.getTemperatureStrategy().getTemperatureMax(daily));
+
+        holder.tempMin.setText(min);
+        holder.tempMax.setText(max);
         holder.tempUnit.setText(unitContext.getTemperatureStrategy().getUnit());
     }
 

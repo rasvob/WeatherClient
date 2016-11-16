@@ -4,6 +4,7 @@ package com.diamonddesign.rasvo.weatherclient.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -69,6 +70,7 @@ public class DailyFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         recyclerView.setAdapter(adapter);
 
         refreshLayout.setOnRefreshListener(this);
+        refreshLayout.setColorSchemeColors(ContextCompat.getColor(getContext(), R.color.colorPrimary), ContextCompat.getColor(getContext(), R.color.colorAccent),ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
 
         if (currentLocation != null) {
             loadData(currentLocation);
