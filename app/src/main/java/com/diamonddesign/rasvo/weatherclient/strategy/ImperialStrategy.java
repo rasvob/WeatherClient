@@ -2,6 +2,7 @@ package com.diamonddesign.rasvo.weatherclient.strategy;
 
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
+import com.diamonddesign.rasvo.weatherclient.orm.HourlyCondition;
 
 /**
  * Created by rasvo on 14.11.2016.
@@ -10,6 +11,11 @@ import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
 public class ImperialStrategy implements IUnitStrategy {
     @Override
     public double getWindSpeed(CurrentConditions conditions) {
+        return conditions.getWindSpeedImperial();
+    }
+
+    @Override
+    public double getWindSpeed(HourlyCondition conditions) {
         return conditions.getWindSpeedImperial();
     }
 

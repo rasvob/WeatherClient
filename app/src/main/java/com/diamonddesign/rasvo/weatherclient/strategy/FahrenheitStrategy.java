@@ -2,6 +2,7 @@ package com.diamonddesign.rasvo.weatherclient.strategy;
 
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
+import com.diamonddesign.rasvo.weatherclient.orm.HourlyCondition;
 
 /**
  * Created by rasvo on 14.11.2016.
@@ -14,7 +15,17 @@ public class FahrenheitStrategy implements ITemperatureStrategy {
     }
 
     @Override
+    public double getTemperature(HourlyCondition conditions) {
+        return conditions.getTemperatureImperial();
+    }
+
+    @Override
     public double getRealFeelTemperature(CurrentConditions conditions) {
+        return conditions.getTemperatureRealFeelImperial();
+    }
+
+    @Override
+    public double getRealFeelTemperature(HourlyCondition conditions) {
         return conditions.getTemperatureRealFeelImperial();
     }
 
