@@ -8,12 +8,11 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
         <LinearLayout
             android:orientation="vertical"
-            android:background="@drawable/header_bg_04"
+            android:background="@drawable/day"
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="210dp">
 
             <ImageView
                 android:elevation="3dp"

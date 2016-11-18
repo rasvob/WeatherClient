@@ -2,11 +2,13 @@ package com.diamonddesign.rasvo.weatherclient.fragments.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.diamonddesign.rasvo.weatherclient.R;
 import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
@@ -24,18 +26,28 @@ public class HourlyFragmentAdapter extends RecyclerView.Adapter<HourlyFragmentAd
     private ArrayList<HourlyCondition> data;
     private Context context;
     private UnitContext unitContext;
+    private IRecyclerViewRowClicked clickedCallback;
 
-    public HourlyFragmentAdapter(ArrayList<HourlyCondition> data, Context context, UnitContext unitContext) {
+    public HourlyFragmentAdapter(ArrayList<HourlyCondition> data, Context context, UnitContext unitContext, IRecyclerViewRowClicked callback) {
         this.data = data;
         this.context = context;
         this.unitContext = unitContext;
+        this.clickedCallback = callback;
     }
 
     @Override
     public HourlyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.hourly_list_item, parent, false);
+        final HourlyViewHolder holder = new HourlyViewHolder(view);
 
-        return new HourlyViewHolder(view);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickedCallback.onRowClick(holder.getLayoutPosition());
+            }
+        });
+
+        return holder;
     }
 
     @Override
@@ -48,11 +60,14 @@ public class HourlyFragmentAdapter extends RecyclerView.Adapter<HourlyFragmentAd
         holder.phrase.setText(condition.getPhrase());
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
         String min = decimalFormat.format(unitContext.getTemperatureStrategy().getTemperature(condition));
+        holder.tempMin.setText(min);
+        holder.tempUnit.setText(unitContext.getTemperatureStrategy().getUnit());
+        holder.precip.setText(condition.getPrecipitationProbability() + " " + context.getString(R.string.percent));
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return data.size();
     }
 
     public class HourlyViewHolder extends RecyclerView.ViewHolder {
@@ -94,4 +109,6 @@ public class HourlyFragmentAdapter extends RecyclerView.Adapter<HourlyFragmentAd
     public void setUnitContext(UnitContext unitContext) {
         this.unitContext = unitContext;
     }
+
+
 }

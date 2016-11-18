@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity
 
         nowFragment.setUnitContext(unitContext);
         nowFragment.setCurrentConditionRefreshCallback(this);
-        //hourly
+        hourlyFragment.setUnitContext(unitContext);
         dailyFragment.setUnitContext(unitContext);
 
         List<Location> fav = Location.find(Location.class, "is_favourite = ?", "1");
@@ -157,7 +157,14 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
             case 1:
-
+                HourlyFragment item1 = (HourlyFragment)viewPagerAdapter.getItem(1);
+                Location currentLocation1 = item1.getCurrentLocation();
+                try {
+                    item1.loadData(currentLocation1);
+                    refreshCurrentHeader(currentLocation1);
+                } catch (Exception exc) {
+                    exc.printStackTrace();
+                }
                 break;
             case 2:
                 DailyFragment item2 = (DailyFragment)viewPagerAdapter.getItem(2);
@@ -170,8 +177,6 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
         }
-
-        Log.d(TAG, "onResume: ");
     }
 
     @Override
@@ -246,6 +251,7 @@ public class MainActivity extends AppCompatActivity
         dailyFragment.setCurrentLocation(location);
 
         HourlyFragment hourlyFragment = (HourlyFragment) viewPagerAdapter.getItem(1);
+        hourlyFragment.setCurrentLocation(location);
 
         setDrawerHeaderInfo(location);
 
@@ -259,7 +265,7 @@ public class MainActivity extends AppCompatActivity
                 nowFragment.loadData(location);
                 break;
             case 1:
-
+                hourlyFragment.loadData(location);
                 break;
             case 2:
                 dailyFragment.loadData(location);

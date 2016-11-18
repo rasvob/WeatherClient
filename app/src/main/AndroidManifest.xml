@@ -46,6 +46,10 @@
         <activity
             android:name=".Settings"
             android:label="@string/title_activity_settings"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".HourlyForecastDetailActivity"
+            android:label="@string/title_activity_hourly_forecast_detail"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

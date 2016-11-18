@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_hourly_forecast_detail"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.diamonddesign.rasvo.weatherclient.HourlyForecastDetailActivity"
+    tools:showIn="@layout/activity_hourly_forecast_detail">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:background="@drawable/day"
+        android:layout_width="match_parent"
+        android:layout_height="210dp">
+
+        <ImageView
+            android:elevation="3dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="15dp"
+            android:tint="@color/white"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_1"
+            android:id="@+id/hourly_detail_header_icon"
+            android:layout_width="120dp"
+            android:layout_height="120dp" />
+
+        <TextView
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:layout_gravity="center"
+            android:id="@+id/hourly_detail_header_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:id="@+id/hourly_detail_header_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/hourly_detail_grid_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </FrameLayout>
+
+</RelativeLayout>
