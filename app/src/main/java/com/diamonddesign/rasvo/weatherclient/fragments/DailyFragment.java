@@ -2,6 +2,7 @@ package com.diamonddesign.rasvo.weatherclient.fragments;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -15,12 +16,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.diamonddesign.rasvo.weatherclient.DailyForecastDetailActivity;
+import com.diamonddesign.rasvo.weatherclient.HourlyForecastDetailActivity;
 import com.diamonddesign.rasvo.weatherclient.R;
 import com.diamonddesign.rasvo.weatherclient.api.ForecastApi;
 import com.diamonddesign.rasvo.weatherclient.api.async.DailyForecastTask;
 import com.diamonddesign.rasvo.weatherclient.enums.TemperatureUnits;
 import com.diamonddesign.rasvo.weatherclient.enums.Units;
 import com.diamonddesign.rasvo.weatherclient.fragments.adapters.DailyFragmentAdapter;
+import com.diamonddesign.rasvo.weatherclient.fragments.adapters.IRecyclerViewRowClicked;
 import com.diamonddesign.rasvo.weatherclient.fragments.adapters.NowFragmentAdapter;
 import com.diamonddesign.rasvo.weatherclient.orm.CurrentConditions;
 import com.diamonddesign.rasvo.weatherclient.orm.DailyConditions;
@@ -32,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DailyFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class DailyFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, IRecyclerViewRowClicked {
     private Location currentLocation;
     private UnitContext unitContext = new UnitContext(TemperatureUnits.CELSIUS, Units.METRIC);
     private SwipeRefreshLayout refreshLayout;
@@ -66,7 +70,7 @@ public class DailyFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        adapter = new DailyFragmentAdapter(conditions, getContext(), unitContext);
+        adapter = new DailyFragmentAdapter(conditions, getContext(), unitContext, this);
         recyclerView.setAdapter(adapter);
 
         refreshLayout.setOnRefreshListener(this);
@@ -156,5 +160,14 @@ public class DailyFragment extends Fragment implements SwipeRefreshLayout.OnRefr
         };
 
         task.execute(api.buildDailyForecastRequst(currentLocation.getKey()));
+    }
+
+    @Override
+    public void onRowClick(int position) {
+        Intent detail = new Intent(getActivity(), DailyForecastDetailActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putLong("ID", conditions.get(position).getId());
+        detail.putExtras(bundle);
+        startActivity(detail);
     }
 }

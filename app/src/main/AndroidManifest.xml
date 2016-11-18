@@ -50,6 +50,10 @@
         <activity
             android:name=".HourlyForecastDetailActivity"
             android:label="@string/title_activity_hourly_forecast_detail"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".DailyForecastDetailActivity"
+            android:label="@string/title_activity_daily_forecast_detail_actvity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

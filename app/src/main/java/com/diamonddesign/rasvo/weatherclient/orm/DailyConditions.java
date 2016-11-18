@@ -12,6 +12,7 @@ import com.diamonddesign.rasvo.weatherclient.strategy.IUnitStrategy;
 import com.google.common.base.Strings;
 import com.orm.SugarRecord;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -357,6 +358,7 @@ public class DailyConditions extends SugarRecord {
         NowGridItem snow = new NowGridItem();
         NowGridItem ice = new NowGridItem();
 
+        DecimalFormat format = new DecimalFormat("#.00");
 
         //Headers
         tempMin.setHeader(context.getString(R.string.temp_min));
@@ -372,13 +374,13 @@ public class DailyConditions extends SugarRecord {
         ice.setHeader(context.getString(R.string.ice));
 
         //Values
-        tempMin.setValue(String.valueOf(temperatureStrategy.getTemperatureMin(this)));
-        tempMax.setValue(String.valueOf(temperatureStrategy.getRealFeelTemperatureMin(this)));
-        realFeelMin.setValue(String.valueOf(temperatureStrategy.getRealFeelTemperatureMin(this)));
+        tempMin.setValue(format.format(temperatureStrategy.getTemperatureMin(this)));
+        tempMax.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMin(this)));
+        realFeelMin.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMin(this)));
 
-        realFeelMax.setValue(String.valueOf(temperatureStrategy.getRealFeelTemperatureMax(this)));
+        realFeelMax.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMax(this)));
         cloudCover.setValue(String.valueOf(this.dayCloudCover));
-        windSpeed.setValue(String.valueOf(unitStrategy.getWindSpeed(this, true)));
+        windSpeed.setValue(format.format(unitStrategy.getWindSpeed(this, true)));
 
         rain.setValue(String.valueOf(this.dayRainProbability));
         snow.setValue(String.valueOf(this.daySnowProbability));
@@ -427,6 +429,7 @@ public class DailyConditions extends SugarRecord {
         NowGridItem snow = new NowGridItem();
         NowGridItem ice = new NowGridItem();
 
+        DecimalFormat format = new DecimalFormat("#.00");
 
         //Headers
         tempMin.setHeader(context.getString(R.string.temp_min));
@@ -442,13 +445,13 @@ public class DailyConditions extends SugarRecord {
         ice.setHeader(context.getString(R.string.ice));
 
         //Values
-        tempMin.setValue(String.valueOf(temperatureStrategy.getTemperatureMin(this)));
-        tempMax.setValue(String.valueOf(temperatureStrategy.getRealFeelTemperatureMin(this)));
-        realFeelMin.setValue(String.valueOf(temperatureStrategy.getRealFeelTemperatureMin(this)));
+        tempMin.setValue(format.format(temperatureStrategy.getTemperatureMin(this)));
+        tempMax.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMin(this)));
+        realFeelMin.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMin(this)));
 
-        realFeelMax.setValue(String.valueOf(temperatureStrategy.getRealFeelTemperatureMax(this)));
+        realFeelMax.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMax(this)));
         cloudCover.setValue(String.valueOf(this.nightCloudCover));
-        windSpeed.setValue(String.valueOf(unitStrategy.getWindSpeed(this, false)));
+        windSpeed.setValue(format.format(unitStrategy.getWindSpeed(this, false)));
 
         rain.setValue(String.valueOf(this.nightRainProbability));
         snow.setValue(String.valueOf(this.nightSnowProbability));

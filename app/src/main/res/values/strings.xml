@@ -65,5 +65,6 @@
     <string name="use_celsius_degrees">Use celsius degrees</string>
     <string name="use_metric_units">Use metric units</string>
     <string name="title_activity_hourly_forecast_detail">HourlyForecastDetailActivity</string>
+    <string name="title_activity_daily_forecast_detail_actvity">DailyForecastDetailActvity</string>
 
 </resources>

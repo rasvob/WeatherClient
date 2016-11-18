@@ -18,6 +18,7 @@ import com.diamonddesign.rasvo.weatherclient.fragments.DetailGridFragment;
 import com.diamonddesign.rasvo.weatherclient.models.NowGridItem;
 import com.diamonddesign.rasvo.weatherclient.orm.HourlyCondition;
 import com.diamonddesign.rasvo.weatherclient.orm.Location;
+import com.diamonddesign.rasvo.weatherclient.sharedprefs.SharedPrefsWrapper;
 import com.diamonddesign.rasvo.weatherclient.strategy.UnitContext;
 
 import java.util.ArrayList;
@@ -46,6 +47,10 @@ public class HourlyForecastDetailActivity extends AppCompatActivity {
         headerDate = (TextView) findViewById(R.id.hourly_detail_header_date);
         gridFrame = (FrameLayout) findViewById(R.id.hourly_detail_grid_fragment);
 
+        SharedPrefsWrapper shWrapper = new SharedPrefsWrapper(this);
+        unitContext.setUnitStrategy(shWrapper.getOtherUnits());
+        unitContext.setTemperatureStrategy(shWrapper.getTemperatureUnits());
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -68,12 +73,18 @@ public class HourlyForecastDetailActivity extends AppCompatActivity {
             if (condition != null) {
                 List<Location> locations = Location.find(Location.class, "key = ?", condition.getKey());
                 if (locations.size() > 0 ){
-                    getSupportActionBar().setTitle(locations.get(0).getLocationName());
+                    currentLocation = locations.get(0);
+                    getSupportActionBar().setTitle(currentLocation.getLocationName());
                 }
 
                 headerIcon.setImageDrawable(condition.getIconDrawable(this));
                 headerText.setText(condition.getPhrase());
                 headerDate.setText(condition.getFormattedDate(this));
+
+                ArrayList<NowGridItem> nowGridItems = condition.mapToGridItems(this, unitContext.getTemperatureStrategy(), unitContext.getUnitStrategy());
+                detailGridFragment.setData(nowGridItems);
+
+                getSupportFragmentManager().beginTransaction().add(R.id.hourly_detail_grid_fragment, detailGridFragment, "DETAIL_HOURLY_FRAGMENT").commit();
             }
         }
 

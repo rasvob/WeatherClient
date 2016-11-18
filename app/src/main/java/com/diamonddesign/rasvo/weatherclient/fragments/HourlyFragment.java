@@ -76,6 +76,11 @@ public class HourlyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
     public void loadData(Location location) {
         this.currentLocation = location;
         adapter.setUnitContext(unitContext);

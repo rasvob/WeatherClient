@@ -23,17 +23,28 @@ public class DailyFragmentAdapter extends RecyclerView.Adapter<DailyFragmentAdap
     private ArrayList<DailyConditions> data;
     private Context context;
     private UnitContext unitContext;
+    private IRecyclerViewRowClicked clickedCallback;
 
-    public DailyFragmentAdapter(ArrayList<DailyConditions> data, Context context, UnitContext unitContext) {
+    public DailyFragmentAdapter(ArrayList<DailyConditions> data, Context context, UnitContext unitContext, IRecyclerViewRowClicked callback) {
         this.data = data;
         this.context = context;
         this.unitContext = unitContext;
+        this.clickedCallback = callback;
     }
 
     @Override
     public DailyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.daily_list_item, parent, false);
-        return new DailyViewHolder(view);
+        final DailyViewHolder holder = new DailyViewHolder(view);
+
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickedCallback.onRowClick(holder.getLayoutPosition());
+            }
+        });
+
+        return holder;
     }
 
     @Override

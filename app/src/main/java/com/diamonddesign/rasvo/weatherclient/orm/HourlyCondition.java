@@ -6,10 +6,15 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 
 import com.diamonddesign.rasvo.weatherclient.R;
+import com.diamonddesign.rasvo.weatherclient.models.NowGridItem;
+import com.diamonddesign.rasvo.weatherclient.strategy.ITemperatureStrategy;
+import com.diamonddesign.rasvo.weatherclient.strategy.IUnitStrategy;
 import com.orm.SugarRecord;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -240,5 +245,75 @@ public class HourlyCondition extends SugarRecord {
             e.printStackTrace();
         }
         return context.getString(R.string.no_info);
+    }
+
+    public ArrayList<NowGridItem> mapToGridItems(Context context, ITemperatureStrategy temperatureStrategy, IUnitStrategy unitStrategy) {
+        ArrayList<NowGridItem> items = new ArrayList<>();
+        NowGridItem temp = new NowGridItem();
+        NowGridItem realFee = new NowGridItem();
+        NowGridItem cloudCover = new NowGridItem();
+
+        NowGridItem rain = new NowGridItem();
+        NowGridItem snow = new NowGridItem();
+        NowGridItem ice = new NowGridItem();
+
+        NowGridItem windSpeed = new NowGridItem();
+        NowGridItem uvIndex = new NowGridItem();
+        NowGridItem humidity = new NowGridItem();
+
+        DecimalFormat format = new DecimalFormat("#.00");
+
+        //Headers
+        temp.setHeader(context.getString(R.string.temperature));
+        realFee.setHeader(context.getString(R.string.real_feel));
+        cloudCover.setHeader(context.getString(R.string.cloud_cover));
+
+        rain.setHeader(context.getString(R.string.rain));
+        snow.setHeader(context.getString(R.string.snow));
+        ice.setHeader(context.getString(R.string.ice));
+
+        windSpeed.setHeader(context.getString(R.string.wind_speed));
+        uvIndex.setHeader(context.getString(R.string.uv_index));
+        humidity.setHeader(context.getString(R.string.humidity));
+
+        //Values
+        temp.setValue(format.format(temperatureStrategy.getTemperature(this)));
+        realFee.setValue(format.format(temperatureStrategy.getRealFeelTemperature(this)));
+        cloudCover.setValue(String.valueOf(this.cloudCover));
+
+        rain.setValue(String.valueOf(this.rainProbability));
+        snow.setValue(String.valueOf(this.snowProbability));
+        ice.setValue(String.valueOf(this.iceProbability));
+
+        windSpeed.setValue(format.format(unitStrategy.getWindSpeed(this)));
+        uvIndex.setValue(String.valueOf(this.uvIndex));
+        humidity.setValue(String.valueOf(this.relativeHumidity));
+
+        //Units
+        temp.setUnit(temperatureStrategy.getUnit());
+        realFee.setUnit(temperatureStrategy.getUnit());
+        cloudCover.setUnit(context.getString(R.string.percent));
+
+        rain.setUnit(context.getString(R.string.percent));
+        snow.setUnit(context.getString(R.string.percent));
+        ice.setUnit(context.getString(R.string.percent));
+
+        windSpeed.setUnit(unitStrategy.getWindSpeedUnit());
+        uvIndex.setUnit("");
+        humidity.setUnit(context.getString(R.string.percent));
+
+        items.add(temp);
+        items.add(realFee);
+        items.add(cloudCover);
+
+        items.add(rain);
+        items.add(snow);
+        items.add(ice);
+
+        items.add(windSpeed);
+        items.add(uvIndex);
+        items.add(humidity);
+
+        return items;
     }
 }

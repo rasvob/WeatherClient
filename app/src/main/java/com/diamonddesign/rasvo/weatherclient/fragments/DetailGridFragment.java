@@ -4,6 +4,7 @@ package com.diamonddesign.rasvo.weatherclient.fragments;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -36,7 +37,7 @@ public class DetailGridFragment extends Fragment {
 
         recyclerView = (RecyclerView) view.findViewById(R.id.detailGridRecyclerView);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         adapter = new NowFragmentAdapter(items);
         recyclerView.setAdapter(adapter);
