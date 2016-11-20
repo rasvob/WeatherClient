@@ -375,7 +375,7 @@ public class DailyConditions extends SugarRecord {
 
         //Values
         tempMin.setValue(format.format(temperatureStrategy.getTemperatureMin(this)));
-        tempMax.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMin(this)));
+        tempMax.setValue(format.format(temperatureStrategy.getTemperatureMax(this)));
         realFeelMin.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMin(this)));
 
         realFeelMax.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMax(this)));
@@ -446,7 +446,7 @@ public class DailyConditions extends SugarRecord {
 
         //Values
         tempMin.setValue(format.format(temperatureStrategy.getTemperatureMin(this)));
-        tempMax.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMin(this)));
+        tempMax.setValue(format.format(temperatureStrategy.getTemperatureMax(this)));
         realFeelMin.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMin(this)));
 
         realFeelMax.setValue(format.format(temperatureStrategy.getRealFeelTemperatureMax(this)));
