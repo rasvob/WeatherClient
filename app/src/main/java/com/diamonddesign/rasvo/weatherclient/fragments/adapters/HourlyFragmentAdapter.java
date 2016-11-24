@@ -56,7 +56,7 @@ public class HourlyFragmentAdapter extends RecyclerView.Adapter<HourlyFragmentAd
 
         holder.icon.setImageDrawable(condition.getIconDrawable(context));
         holder.date.setText(condition.getDayAndMonth(context));
-        holder.day.setText(condition.getDayName(context));
+        holder.day.setText(condition.getTime(context));
         holder.phrase.setText(condition.getPhrase());
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
         String min = decimalFormat.format(unitContext.getTemperatureStrategy().getTemperature(condition));

@@ -221,6 +221,19 @@ public class HourlyCondition extends SugarRecord {
         return context.getString(R.string.no_info);
     }
 
+    public String getTime(Context context) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMAN);
+        try {
+            Date parse = format.parse(this.date);
+            SimpleDateFormat newFormat = new SimpleDateFormat("HH:mm", Locale.GERMAN);
+            newFormat.setTimeZone(TimeZone.getTimeZone(TimeZone.getDefault().getID()));
+            return newFormat.format(parse);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return context.getString(R.string.no_info);
+    }
+
     public String getDayName(Context context) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMAN);
         try {
